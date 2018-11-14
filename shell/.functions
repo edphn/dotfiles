@@ -1,0 +1,13 @@
+# Convert Flac to Mp3
+flac2cmp3() {
+    ffmpeg -i "$1".flac -ab 320k -map_metadata 0 -id3v2_version 3 "$1".mp3
+}
+
+# Move downloaded music into 'untagged' directory
+mvmp3() {
+  locations=(~/Downloads/ ~/Soulseek\ Downloads/complete/)
+  for location in ${locations[*]}
+  do
+    mv ${location}*.mp3 ~/Music/Music/_Untagged
+  done
+}

@@ -1,0 +1,58 @@
+# Change extension of all photos to uppercase
+foto:uppercase() {
+  for file in *.jpg(N); do
+    [ -e "$file" ] || continue
+    mv "$file" "$(basename "$file" .jpg).JPG"
+  done
+}
+
+# Rename all photos using DateTimeOriginal
+foto:rename() {
+  rename *.JPG "{{ed}}-$1-"
+}
+
+# Rename all photos using DateTimeOriginal (with time)
+foto:rename-with-time() {
+  rename *.JPG "{{ed|yyyymmdd-HHMM}}-$1-"
+}
+
+# Rename movies using DateTimeOriginal
+foto:rename-movies() {
+  exiftool '-filename<DateTimeOriginal' -d %Y%m%d_%H%M%S%%-c.%%ue $2;
+  rename -r "(?<date>[0-9]+)" *.MOV "{{date}}-$1-";
+}
+
+# Prepare photos directory
+alias foto:prepare="rm -f .DS_Store && foto:uppercase"
+
+# Remove exiftool backups
+alias foto:rm-backups="rm *.JPG_original"
+
+# Display metadata information
+alias foto:ls="exiftool -filename -AllDates -GPSLatitude -GPSLongitude -Model -f -T ."
+
+# List photos without DateTimeOriginal
+alias foto:ls-wo-date="foto:ls -if '(not \$datetimeoriginal or (\$datetimeoriginal eq \"0000:00:00 00:00:00\")) and (\$filetype eq \"JPEG\")'"
+
+# Equalize all dates based on DateTimeOriginal
+alias foto:eq="exiftool '-AllDates<DateTimeOriginal'"
+
+# Copy GPS data
+foto:cp-gps() {
+  exiftool −overwrite_original_in_place -r -tagsFromFile $1 -gps:all $2
+}
+
+# Write all dates
+foto:write-datetimes() {
+  exiftool '-AllDates='$1 $2
+}
+
+# Write only date in DateTimeOriginal (leaving time untouched)
+foto:write-dates() {
+  exiftool -m '-DateTimeOriginal<'$1' ${DateTimeOriginal;s/.* //}' $2
+}
+
+# Do magic with all photos in current directory
+foto:do-magic() {
+  foto:prepare && foto:eq . && foto:rm-backups && foto:rename-with-time && foto:rename temp && foto:rename $1
+}

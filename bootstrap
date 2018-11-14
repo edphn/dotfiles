@@ -1,0 +1,4 @@
+# Source every file in the shell subdirectory
+for file in ~/.dotfiles/shell/.{aliases,foto,functions,misc,zsh}; do
+	[ -r "$file" ] && [ -f "$file" ] && source "$file"
+done
